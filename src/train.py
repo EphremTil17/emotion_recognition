@@ -4,6 +4,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import os
 import sys
+import yaml
 
 # Add the src directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,6 +12,64 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.dataset import EmotionDataset
 from src.model import EmotionRecognitionModel
 from src.utils import Logger, save_checkpoint
+
+def load_config(path):
+    with open(path, 'r') as f:
+        return yaml.safe_load(f)
+
+def train_epoch(model, dataloader, criterion, optimizer, device, scaler=None):
+    model.train()
+    train_loss = 0.0
+    correct = 0
+    total = 0
+
+    pbar = tqdm(dataloader, desc="Training")  # Simplified description
+
+    for inputs, labels in pbar:
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+
+        with torch.amp.autocast(device_type='cuda', dtype=torch.float16):
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+
+        scaler.scale(loss).backward()  # Let scaler handle scaling
+        scaler.step(optimizer)
+        scaler.update()
+
+        train_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += labels.size(0)
+        correct += predicted.eq(labels).sum().item()
+
+        pbar.set_postfix({'loss': train_loss / total, 'acc': 100. * correct / total})
+
+    return train_loss / len(dataloader), 100. * correct / total
+
+
+def validate_epoch(model, dataloader, criterion, device, scaler=None):
+    model.eval()
+    val_loss = 0.0
+    val_correct = 0
+    val_total = 0
+
+    with torch.no_grad():
+        pbar = tqdm(dataloader, desc="Validating")
+
+        for inputs, labels in pbar:
+            inputs, labels = inputs.to(device), labels.to(device)
+
+            with torch.amp.autocast(device_type='cuda', dtype=torch.float16):
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+
+            val_loss += loss.item()
+            _, predicted = outputs.max(1)
+            val_total += labels.size(0)
+            val_correct += predicted.eq(labels).sum().item()
+            pbar.set_postfix({'loss': val_loss / val_total, 'acc': 100. * val_correct / val_total}) # Add postfix here
+
+    return val_loss / len(dataloader), 100. * val_correct / val_total
 
 def train(config):
     # Initialize logger
@@ -43,7 +102,7 @@ def train(config):
     # Configure DataLoader parameters
     dataloader_kwargs = {
         'batch_size': config['batch_size'],
-        'num_workers': 2 if os.name == 'nt' else min(os.cpu_count(), 4),  # 0 for Windows
+        'num_workers': 8 if os.name == 'nt' else min(os.cpu_count(), 4),  # 0 for Windows
         'pin_memory': cuda_available
     }
     
@@ -86,81 +145,27 @@ def train(config):
     logger.log("Starting training...")
     
     for epoch in range(config['num_epochs']):
-        model.train()
-        train_loss = 0.0
-        correct = 0
-        total = 0
-        
-        # Training phase
-        pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{config["num_epochs"]}')
-        for inputs, labels in pbar:
-            inputs, labels = inputs.to(device), labels.to(device)
-            
-            optimizer.zero_grad()
-            
-            if cuda_available:
-                # Use automatic mixed precision
-                with torch.amp.autocast(device_type='cuda', dtype=torch.float16):  # Correct usage
-                    outputs = model(inputs)
-                    loss = criterion(outputs, labels)
-                
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
-            else:
-                # Regular training
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-            
-            train_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += labels.size(0)
-            correct += predicted.eq(labels).sum().item()
-            
-            pbar.set_postfix({
-                'loss': train_loss/total, 
-                'acc': 100.*correct/total,
-                'lr': optimizer.param_groups[0]['lr']
-            })
-        
-        # Validation phase
-        model.eval()
-        val_loss = 0.0
-        val_correct = 0
-        val_total = 0
-        
-        with torch.no_grad():
-            for inputs, labels in val_loader:
-                inputs, labels = inputs.to(device), labels.to(device)
-                
-                if cuda_available:
-                    with torch.cuda.amp.autocast():
-                        outputs = model(inputs)
-                        loss = criterion(outputs, labels)
-                else:
-                    outputs = model(inputs)
-                    loss = criterion(outputs, labels)
-                
-                val_loss += loss.item()
-                _, predicted = outputs.max(1)
-                val_total += labels.size(0)
-                val_correct += predicted.eq(labels).sum().item()
-        
-        val_acc = 100. * val_correct / val_total
+        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, device, scaler)
+        val_loss, val_acc = validate_epoch(model, val_loader, criterion, device, scaler)
+
+        scheduler.step(val_acc)
+        current_lr = optimizer.param_groups[0]['lr']    
+
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            save_checkpoint(model, optimizer, epoch, val_loss, val_acc, config['checkpoint_dir'])
+            logger.log(f'New best model saved with validation accuracy: {val_acc:.2f}%')
         
         # Update learning rate scheduler
         scheduler.step(val_acc)
         current_lr = optimizer.param_groups[0]['lr']  # Use this for logging LR
-        logger.log(f"Current Learning rate is {current_lr}")
-        
+
         # Log metrics
         logger.log(f'Epoch {epoch+1}/{config["num_epochs"]}:')
-        logger.log(f'Train Loss: {train_loss/len(train_loader):.4f}, '
-                  f'Train Acc: {100.*correct/total:.2f}%')
-        logger.log(f'Val Loss: {val_loss/len(val_loader):.4f}, '
-                  f'Val Acc: {val_acc:.2f}%')
+        logger.log(f"Current Learning rate is {current_lr}")
+        logger.log(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%') # Use returned train_acc
+        logger.log(f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%')
+
         
         # Save checkpoint if validation accuracy improves
         if val_acc > best_val_acc:
@@ -173,15 +178,7 @@ def train(config):
             logger.log(f'New best model saved with validation accuracy: {val_acc:.2f}%')
 
 if __name__ == '__main__':
-    config = {
-        'data_dir': '../data/split_images',
-        'log_dir': '../logs',
-        'checkpoint_dir': '../checkpoints',
-        'batch_size': 64,  # Reduced batch size for initial testing
-        'learning_rate': 1e-4,
-        'weight_decay': 1e-5,
-        'num_epochs': 50,
-    }
+    config = load_config('config.yml')
     
     # Create necessary directories
     os.makedirs(config['log_dir'], exist_ok=True)

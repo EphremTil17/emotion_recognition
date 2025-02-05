@@ -1,0 +1,7 @@
+data_dir: ../data/split_images
+log_dir: ../logs
+checkpoint_dir: ../checkpoints
+batch_size: 8
+learning_rate: 0.0001 # or 1.0e-4
+weight_decay: 0.00001 # or 1.0e-5
+num_epochs: 50
