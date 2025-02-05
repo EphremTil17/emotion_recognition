@@ -80,3 +80,18 @@ After training, you can find:
 ## License
 
 [Your chosen license]
+
+# Video Requirements
+
+For best results when using video emotion recognition:
+
+1. Record videos in landscape orientation (horizontal)
+2. Ensure good lighting conditions
+3. Face should be clearly visible
+4. Recommended resolution: 720p or higher
+5. If you have a portrait video, use the prepare_video.py script:
+   ```bash
+   python prepare_video.py your_video.mp4
+   ```
+
+This will create a properly oriented version of your video ending in '_landscape.mp4'
