@@ -1,6 +1,23 @@
-data/*
+# Dependencies
+node_modules/
+/frontend/node_modules
+
+# Python
+data/images/*
+data/split_images/*
 checkpoints/*
 logs/*
 __pycache__/
-*.pyc
-*.pth
+
+# Virtual Environment
+*.env
+venv/
+env/
+ENV/
+
+# Video files
+backend/uploads/*
+backend/processed_videos/*
+
+#FrontEnd
+*.vite

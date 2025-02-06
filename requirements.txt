@@ -1,10 +1,13 @@
-torch>=1.8.0
-torchvision>=0.9.0
-numpy>=1.19.2
-matplotlib>=3.3.4
-seaborn>=0.11.1
-scikit-learn>=0.24.1
-tqdm>=4.59.0
-pillow>=8.2.0
-opencv-python>=4.5.0  # Added for face detection
-mediapipe>=0.10.20  # Added for face detection
+numpy
+matplotlib
+seaborn
+scikit-learn
+tqdm
+pillow
+opencv-python == 4.11.0.86
+mediapipe
+
+# PyTorch with CUDA 11.8 support
+--find-links https://download.pytorch.org/whl/cu126
+torch
+torchvision

@@ -1,97 +1,111 @@
-# Facial Emotion Recognition with ResNet-50
+# Emotion Recognition System
 
-This project implements a facial emotion recognition system using a pre-trained ResNet-50 model with PyTorch.
+A real-time and video emotion recognition system using Deep Learning, FastAPI, and React.
+
+## System Requirements
+
+### Windows (Development/Processing Server)
+- Python 3.11
+- CUDA 11.8
+- NVIDIA GPU (Tested on RTX 3060 Ti)
+- Node.js 18+
+
+### Linux (Deployment Server)
+- Docker
+- Docker Compose
+- Nginx
 
 ## Project Structure
-
 ```
 emotion_recognition/
-├── data/
-│   └── images/           # Contains subfolders for each emotion
-├── src/
-│   ├── __init__.py
-│   ├── dataset.py       # Dataset and data loading utilities
-│   ├── model.py         # Model architecture definition
-│   ├── train.py         # Training script
-│   ├── evaluate.py      # Evaluation script
-│   └── utils.py         # Helper functions
-├── notebooks/
-├── logs/                # Training logs and visualizations
-├── checkpoints/         # Model checkpoints
-├── requirements.txt
-└── README.md
+├── backend/
+│   ├── uploads/           # Original videos
+│   ├── processed/         # Processed videos
+│   ├── processing_service.py
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   └── package.json
+└── docker/
+    └── docker-compose.yml
 ```
 
-## Setup
+## Setup Instructions
 
-1. Create a virtual environment:
+### Windows (Processing Server)
 ```bash
+# Clone repository
+git clone https://github.com/yourusername/emotion_recognition.git
+cd emotion_recognition
+
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+.\venv\Scripts\activate
+
+# Install PyTorch with CUDA
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# Install other requirements
+pip install -r backend/requirements.txt
+
+# Start processing service
+python backend/processing_service.py
 ```
 
-2. Install dependencies:
+### Frontend Development
 ```bash
-pip install -r requirements.txt
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run start
 ```
 
-3. Prepare your dataset:
-   - Place your emotion images in subfolders under `data/images/`
-   - Each subfolder should be named after the emotion class (e.g., 'happy', 'sad', etc.)
-   - Split your data into train/val/test sets
-
-## Training
-
-To train the model:
-
+### Linux Deployment
 ```bash
-cd src
-python train.py
+# Clone repository
+git clone https://github.com/yourusername/emotion_recognition.git
+cd emotion_recognition
+
+# Start services
+docker-compose up -d
 ```
 
-You can modify the training configuration in the `train.py` script.
+## API Endpoints
 
-## Evaluation
+### Processing Service (port 8001)
+- POST `/process` - Process video file
+- GET `/health` - Check service status
 
-To evaluate a trained model:
+### Frontend (port 8000)
+- Web interface for video upload and processing
 
+## Development
+
+### Running Tests
 ```bash
-cd src
-python evaluate.py
+# Backend tests
+python -m pytest backend/tests
+
+# Frontend tests
+cd frontend
+npm test
 ```
 
-## Model Architecture
-
-- Base model: ResNet-50 (pre-trained on ImageNet)
-- Modified final layer for emotion classification
-- Data augmentation:
-  - Random horizontal flip
-  - Color jitter
-  - Random rotation
-  - Normalization using ImageNet statistics
-
-## Results
-
-After training, you can find:
-- Training logs in the `logs/` directory
-- Model checkpoints in the `checkpoints/` directory
-- Confusion matrix and evaluation metrics in the logs
+### Building for Production
+```bash
+# Frontend build
+cd frontend
+npm run build
+```
 
 ## License
 
 [Your chosen license]
 
-# Video Requirements
+## Contributors
 
-For best results when using video emotion recognition:
-
-1. Record videos in landscape orientation (horizontal)
-2. Ensure good lighting conditions
-3. Face should be clearly visible
-4. Recommended resolution: 720p or higher
-5. If you have a portrait video, use the prepare_video.py script:
-   ```bash
-   python prepare_video.py your_video.mp4
-   ```
-
-This will create a properly oriented version of your video ending in '_landscape.mp4'
+- [Your Name]
