@@ -17,7 +17,8 @@ ENV/
 
 # Video files
 backend/uploads/*
-backend/processed_videos/*
+backend/processed/*
 
 #FrontEnd
 *.vite
+frontend/dist/*
