@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Initialize the emotion predictor
-model_path = "../checkpoints/checkpoint_epoch_12.pth"  # Adjust path as needed
+model_path = "../model/best_model.pth"  # Adjust path as needed
 predictor = None
 
 @app.get("/health")

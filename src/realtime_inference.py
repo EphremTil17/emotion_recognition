@@ -215,7 +215,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Real-time Emotion Recognition')
-    parser.add_argument('--model', default='../checkpoints/best_model.pth',
+    parser.add_argument('--model', default='../model/best_model.pth',
                       help='Path to model checkpoint')
     parser.add_argument('--num-classes', type=int, default=5,
                       help='Number of emotion classes')
