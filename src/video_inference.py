@@ -242,7 +242,7 @@ def main():
     parser.add_argument('input_video', help='Path to input video file')
     parser.add_argument('--output', default='output.mp4',
                       help='Path to output video file')
-    parser.add_argument('--model', default='../checkpoints/best_model.pth',
+    parser.add_argument('--model', default='../model/best_model.pth',
                       help='Path to model checkpoint')
     parser.add_argument('--fps', type=int, default=4,
                       help='Target processing frame rate')
