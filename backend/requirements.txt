@@ -1,0 +1,14 @@
+# Core requirements
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+opencv-python==4.8.1.78
+numpy>=1.21.0
+Pillow>=9.0.0
+tqdm>=4.66.1
+mediapipe
+
+# PyTorch with CUDA 11.8 support
+--find-links https://download.pytorch.org/whl/cu126
+torch
+torchvision

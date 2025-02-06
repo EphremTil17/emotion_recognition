@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ../backend
+      dockerfile: ../docker/backend.Dockerfile
+    container_name: emotion-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app
+      - uploaded_videos:/app/uploads
+      - processed_videos:/app/processed
+    environment:
+      - PROCESSING_SERVER=${PROCESSING_SERVER:-http://host.docker.internal:8001}
+    networks:
+      - emotion-net
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    container_name: emotion-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+    networks:
+      - emotion-net
+
+networks:
+  emotion-net:
+    driver: bridge
+
+volumes:
+  uploaded_videos:
+  processed_videos:
