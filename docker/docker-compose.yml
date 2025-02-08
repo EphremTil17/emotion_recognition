@@ -1,38 +1,50 @@
-version: '3.8'
-
 services:
-  backend:
-    build: 
-      context: ../backend
-      dockerfile: ../docker/backend.Dockerfile
-    container_name: emotion-backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ../backend:/app
-      - uploaded_videos:/app/uploads
-      - processed_videos:/app/processed
-    environment:
-      - PROCESSING_SERVER=${PROCESSING_SERVER:-http://host.docker.internal:8001}
-    networks:
-      - emotion-net
-
   frontend:
     build:
       context: ../frontend
       dockerfile: ../docker/frontend.Dockerfile
     container_name: emotion-frontend
     ports:
-      - "3000:3000"
-    volumes:
-      - ../frontend:/app
+      - "8000:8000"
+    environment:
+      - VITE_API_URL=http://backend:8001  # Changed to use service name
+    depends_on:
+      backend:
+        condition: service_healthy
     networks:
       - emotion-net
+      - vpc_network  # Add your external network if it already exists
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: emotion-backend
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../backend/uploads:/app/backend/uploads
+      - ../backend/processed:/app/backend/processed
+      - ../model:/app/model
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - emotion-net
+      - vpc_network  # Add your external network if it already exists
 
 networks:
   emotion-net:
     driver: bridge
-
-volumes:
-  uploaded_videos:
-  processed_videos:
+  vpc_network: # Add your external network if it already exists
+    external: true  # This tells Docker this is a pre-existing network
