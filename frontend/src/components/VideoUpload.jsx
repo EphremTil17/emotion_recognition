@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { 
@@ -12,12 +13,15 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 
 const UploadBox = styled(Paper)(({ theme }) => ({
-    padding: theme.spacing(3),
+    padding: theme.spacing(6),
     textAlign: 'center',
     cursor: 'pointer',
-    border: '2px dashed #ccc',
+    border: '2px dashed rgba(0, 0, 0, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    transition: 'all 0.3s ease-in-out',
     '&:hover': {
-        border: '2px dashed #999',
+        border: '2px dashed #2196F3',
+        backgroundColor: 'rgba(33, 150, 243, 0.04)',
     },
 }));
 
@@ -50,7 +54,6 @@ const VideoUpload = () => {
 
             const data = await response.json();
             setSuccess(true);
-            // Handle successful upload (e.g., show download link)
             console.log('Upload successful:', data);
         } catch (err) {
             setError(err.message);
@@ -69,30 +72,37 @@ const VideoUpload = () => {
     });
 
     return (
-        <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+        <Box>
             {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
                     {error}
                 </Alert>
             )}
             
             {success && (
-                <Alert severity="success" sx={{ mb: 2 }}>
+                <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
                     Video uploaded and processed successfully!
                 </Alert>
             )}
 
             <UploadBox {...getRootProps()}>
                 <input {...getInputProps()} />
-                <CloudUploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                <CloudUploadIcon sx={{ 
+                    fontSize: 64, 
+                    color: isDragActive ? '#2196F3' : 'primary.main',
+                    mb: 2,
+                    transition: 'all 0.3s ease-in-out'
+                }} />
                 
                 {uploading ? (
                     <Box>
-                        <CircularProgress size={24} sx={{ mb: 1 }} />
-                        <Typography>Processing video...</Typography>
+                        <CircularProgress size={30} sx={{ mb: 2 }} />
+                        <Typography variant="h6" color="primary">
+                            Processing video...
+                        </Typography>
                     </Box>
                 ) : (
-                    <Typography>
+                    <Typography variant="h6" color={isDragActive ? 'primary' : 'text.primary'}>
                         {isDragActive
                             ? "Drop the video here..."
                             : "Drag & drop a video here, or click to select"}
@@ -100,8 +110,12 @@ const VideoUpload = () => {
                 )}
             </UploadBox>
 
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-                <Typography variant="caption" color="textSecondary">
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ 
+                    p: 1,
+                    borderRadius: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                }}>
                     Supported formats: MP4, AVI, MOV
                 </Typography>
             </Box>

@@ -8,7 +8,7 @@ const Header = () => {
             <Toolbar>
                 <EmojiEmotionsIcon sx={{ mr: 2 }} />
                 <Typography variant="h6" component="div">
-                    Emotion Recognition
+                    Engage AI - Emotion Recognition
                 </Typography>
                 <Box sx={{ flexGrow: 1 }} />
             </Toolbar>
