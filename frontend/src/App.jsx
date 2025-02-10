@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { Box, Container, Typography, Paper } from '@mui/material'
 import VideoUpload from './components/VideoUpload'
@@ -11,7 +10,7 @@ function App() {
       <Header />
       <Container maxWidth="lg">
         <Box sx={{ my: 6 }}>
-          <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ 
+          <Typography variant="h3" component="h1" gutterBottom align="center" sx={{
             fontWeight: 600,
             background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
             backgroundClip: 'text',
@@ -30,7 +29,7 @@ function App() {
         </Box>
       </Container>
     </>
-  )
+  );
 }
 
 export default App

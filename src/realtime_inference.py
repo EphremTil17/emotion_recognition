@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torchvision import transforms
 import mediapipe as mp
 import time
-from model import EmotionRecognitionModel
+from src.model import EmotionRecognitionModel
 
 class RealtimeEmotionPredictor:
     def __init__(self, model_path, num_classes=5):
@@ -42,10 +42,13 @@ class RealtimeEmotionPredictor:
         
     def detect_face(self, frame):
         """Detect face using MediaPipe"""
+        #print("Starting face detection...")  # Debug print
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.face_detection.process(frame_rgb)
+        #print(f"Detection results: {results.detections}")  # Debug print
         
         if not results.detections:
+            #print("No faces detected")  # Debug print
             return None
         
         # Get first face detection
@@ -65,6 +68,7 @@ class RealtimeEmotionPredictor:
         w = min(iw - x, int(w * (1 + 2 * padding)))
         h = min(ih - y, int(h * (1 + 2 * padding)))
         
+        #print(f"Face detected at: {(x, y, w, h)}")  # Debug print
         return (x, y, w, h)
         
     def preprocess_face(self, frame, face):
