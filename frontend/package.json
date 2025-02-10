@@ -3,19 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.11.3",
-    "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.15.2",
-    "@mui/icons-material": "^5.15.2",
-    "axios": "^1.6.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "react-dropzone": "^14.2.3"
-  },
+    "@emotion/react": "latest",
+    "@emotion/styled": "latest",
+    "@mui/material": "latest",
+    "@mui/icons-material": "latest",
+    "axios": "latest",    "react": "latest",
+    "react-dom": "latest",
+    "react-dropzone": "latest",
+    "recharts": "latest",
+    "papaparse": "latest",    
+    "apexcharts": "latest",    
+    "react-apexcharts": "latest" },
+    
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.4.14"
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest"
   },
   "scripts": {
     "start": "vite --host 0.0.0.0",

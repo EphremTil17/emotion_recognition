@@ -1,16 +1,15 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography } from '@mui/material';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
 const Header = () => {
     return (
-        <AppBar position="static">
+        <AppBar position="static" sx={{ marginBottom: 2 }}>
             <Toolbar>
                 <EmojiEmotionsIcon sx={{ mr: 2 }} />
-                <Typography variant="h6" component="div">
-                    Engage AI - Emotion Recognition
+                <Typography variant="h6">
+                    Emotion Recognition
                 </Typography>
-                <Box sx={{ flexGrow: 1 }} />
             </Toolbar>
         </AppBar>
     );

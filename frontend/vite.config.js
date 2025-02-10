@@ -6,31 +6,39 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 8000,
+    watch: { usePolling: true },
     proxy: {
-      '/api': {
-        target: 'http://backend:8001',
+      '/api/process': {
+        target: 'http://localhost:8001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/api/analytics': {  // Add this proxy rule
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/ws': {
+        target: 'wss://api.ephremst.com',
+        ws: true,
+        changeOrigin: true,
+        secure: true,
+        headers: {
+          'Origin': 'https://engageai.ephremst.com'
+        }
       }
     },
-    // Add allowed hosts
     allowedHosts: [
-      'yourdomain.com',
+      'engageai.ephremst.com',
+      'api.ephremst.com',
       'localhost',
       '127.0.0.1'
     ]
   },
-  esbuild: {
-    loader: 'jsx',
-    include: /src\/.*\.jsx?$/,
-    exclude: [],
-  },
+  preview: { host: '0.0.0.0', port: 8000 },
   optimizeDeps: {
     esbuildOptions: {
-      loader: {
-        '.js': 'jsx',
-        '.jsx': 'jsx'
-      }
+      loader: { '.js': 'jsx', '.jsx': 'jsx' }
     }
   }
 })

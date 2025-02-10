@@ -17,7 +17,7 @@ function App() {
             WebkitBackgroundClip: 'text',
             color: 'transparent'
           }}>
-            EngageAI - Emotion Recognition
+            Emotion Recognition
           </Typography>
           <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 4 }}>
             Upload a recorded Zoom lecture video to analyze target audience engagement levels. The system will process the video and generate an engagement report for you.

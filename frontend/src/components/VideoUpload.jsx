@@ -1,6 +1,6 @@
-
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import ResultsView from './ResultsView';
 import { 
     Box, 
     Button, 
@@ -30,7 +30,9 @@ const VideoUpload = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [progress, setProgress] = useState(0);
-
+    const [processedResults, setProcessedResults] = useState(null);
+    const [showResults, setShowResults] = useState(false);
+    
     const onDrop = useCallback(async (acceptedFiles) => {
         const file = acceptedFiles[0];
         if (!file) return;
@@ -53,6 +55,7 @@ const VideoUpload = () => {
             }
 
             const data = await response.json();
+            setProcessedResults(data);
             setSuccess(true);
             console.log('Upload successful:', data);
         } catch (err) {
@@ -73,52 +76,72 @@ const VideoUpload = () => {
 
     return (
         <Box>
-            {error && (
-                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                    {error}
-                </Alert>
-            )}
-            
-            {success && (
-                <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-                    Video uploaded and processed successfully!
-                </Alert>
-            )}
+            {showResults && processedResults ? (
+                <ResultsView 
+                    processedResults={processedResults}
+                    onClose={() => setShowResults(false)}
+                />
+            ) : (
+                <>
+                    {error && (
+                        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                            {error}
+                        </Alert>
+                    )}
+                    
+                    {success && (
+                        <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+                            Video uploaded and processed successfully!
+                        </Alert>
+                    )}
 
-            <UploadBox {...getRootProps()}>
-                <input {...getInputProps()} />
-                <CloudUploadIcon sx={{ 
-                    fontSize: 64, 
-                    color: isDragActive ? '#2196F3' : 'primary.main',
-                    mb: 2,
-                    transition: 'all 0.3s ease-in-out'
-                }} />
-                
-                {uploading ? (
-                    <Box>
-                        <CircularProgress size={30} sx={{ mb: 2 }} />
-                        <Typography variant="h6" color="primary">
-                            Processing video...
+                    <UploadBox {...getRootProps()}>
+                        <input {...getInputProps()} />
+                        <CloudUploadIcon sx={{ 
+                            fontSize: 64, 
+                            color: isDragActive ? '#2196F3' : 'primary.main',
+                            mb: 2,
+                            transition: 'all 0.3s ease-in-out'
+                        }} />
+                        
+                        {uploading ? (
+                            <Box>
+                                <CircularProgress size={30} sx={{ mb: 2 }} />
+                                <Typography variant="h6" color="primary">
+                                    Processing video...
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <Typography variant="h6" color={isDragActive ? 'primary' : 'text.primary'}>
+                                {isDragActive
+                                    ? "Drop the video here..."
+                                    : "Drag & drop a video here, or click to select"}
+                            </Typography>
+                        )}
+                    </UploadBox>
+
+                    <Box sx={{ mt: 3, textAlign: 'center' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ 
+                            p: 1,
+                            borderRadius: 1,
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                        }}>
+                            Supported formats: MP4, AVI, MOV
                         </Typography>
+                        
+                        {success && (
+                            <Button 
+                                variant="contained" 
+                                color="primary"
+                                onClick={() => setShowResults(true)}
+                                sx={{ mt: 2 }}
+                            >
+                                View Analysis Results
+                            </Button>
+                        )}
                     </Box>
-                ) : (
-                    <Typography variant="h6" color={isDragActive ? 'primary' : 'text.primary'}>
-                        {isDragActive
-                            ? "Drop the video here..."
-                            : "Drag & drop a video here, or click to select"}
-                    </Typography>
-                )}
-            </UploadBox>
-
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ 
-                    p: 1,
-                    borderRadius: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                }}>
-                    Supported formats: MP4, AVI, MOV
-                </Typography>
-            </Box>
+                </>
+            )}
         </Box>
     );
 };
