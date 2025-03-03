@@ -403,15 +403,29 @@ const ResultsView = ({ processedResults, onClose }) => {
                 </Grid>
             </Grid>
 
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Button 
-                    variant="contained" 
+            <Box sx={{ 
+                mt: 3, 
+                textAlign: 'center',
+                display: 'flex',
+                justifyContent: 'center'
+            }}>
+                <Button
+                    variant="contained"
                     onClick={onClose}
-                    sx={{ 
-                        mx: 1,
-                        textTransform: 'none',
+                    sx={{
                         px: 4,
-                        fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+                        py: 1.5,
+                        fontFamily: 'Lexend',
+                        fontWeight: 600,
+                        fontSize: '1.1rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'capitalize',  // Makes it match the other buttons
+                        boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                            transform: 'translateY(-1px)'
+                        }
                     }}
                 >
                     Close Results

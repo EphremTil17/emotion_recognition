@@ -31,3 +31,4 @@ pids/npm_run_dev.pid
 pids/processing_service.pid
 pids/realtime_service.pid
 backend/analytics/latest_session.csv
+frontend/package-lock.json

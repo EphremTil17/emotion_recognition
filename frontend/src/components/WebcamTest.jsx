@@ -192,18 +192,28 @@ const WebcamTest = () => {
         <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Button
                 variant="contained"
-                startIcon={<VideocamIcon />}
+                startIcon={<VideocamIcon sx={{ fontSize: '1.4rem' }} />}
                 onClick={() => { setOpen(true); startStream(); }}
                 sx={{
                     background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                     color: 'white',
                     px: 4,
                     py: 1.5,
+                    fontFamily: 'Chakra Petch',
+                    fontWeight: 600,
                     fontSize: '1.1rem',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
                     transition: 'all 0.3s ease-in-out',
+                    borderRadius: '8px',
                     '&:hover': {
                         background: 'linear-gradient(45deg, #1976D2 30%, #00BCD4 90%)',
-                        transform: 'scale(1.05)'
+                        boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                        transform: 'translateY(-2px) scale(1.02)'
+                    },
+                    '&:active': {
+                        transform: 'translateY(1px)',
                     }
                 }}
             >

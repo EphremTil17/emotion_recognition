@@ -13,15 +13,18 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 
 const UploadBox = styled(Paper)(({ theme }) => ({
-    padding: theme.spacing(6),
+    padding: theme.spacing(8), // Increased padding
     textAlign: 'center',
     cursor: 'pointer',
     border: '2px dashed rgba(0, 0, 0, 0.1)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     transition: 'all 0.3s ease-in-out',
+    borderRadius: '16px', // More rounded corners
     '&:hover': {
         border: '2px dashed #2196F3',
         backgroundColor: 'rgba(33, 150, 243, 0.04)',
+        transform: 'translateY(-5px)', // Subtle lift effect
+        boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
     },
 }));
 
@@ -84,13 +87,33 @@ const VideoUpload = () => {
             ) : (
                 <>
                     {error && (
-                        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                        <Alert 
+                            severity="error" 
+                            sx={{ 
+                                mb: 3, 
+                                borderRadius: 2,
+                                fontFamily: 'Lexend',
+                                '& .MuiAlert-message': {
+                                    fontWeight: 500
+                                }
+                            }}
+                        >
                             {error}
                         </Alert>
                     )}
-                    
+
                     {success && (
-                        <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+                        <Alert 
+                            severity="success" 
+                            sx={{ 
+                                mb: 3, 
+                                borderRadius: 2,
+                                fontFamily: 'Lexend',
+                                '& .MuiAlert-message': {
+                                    fontWeight: 500
+                                }
+                            }}
+                        >
                             Video uploaded and processed successfully!
                         </Alert>
                     )}
@@ -98,34 +121,71 @@ const VideoUpload = () => {
                     <UploadBox {...getRootProps()}>
                         <input {...getInputProps()} />
                         <CloudUploadIcon sx={{ 
-                            fontSize: 64, 
+                            fontSize: 80, // Larger icon
                             color: isDragActive ? '#2196F3' : 'primary.main',
-                            mb: 2,
-                            transition: 'all 0.3s ease-in-out'
+                            mb: 3,
+                            transition: 'all 0.3s ease-in-out',
+                            transform: isDragActive ? 'scale(1.1)' : 'scale(1.5)', // Add scale effect
                         }} />
                         
                         {uploading ? (
                             <Box>
-                                <CircularProgress size={30} sx={{ mb: 2 }} />
-                                <Typography variant="h6" color="primary">
+                                <CircularProgress size={40} sx={{ mb: 3 }} />
+                                <Typography 
+                                    variant="h6" 
+                                    color="primary"
+                                    sx={{ 
+                                        fontFamily: 'Chakra Petch',
+                                        fontWeight: 600,
+                                        letterSpacing: '0.5px'
+                                    }}
+                                >
                                     Processing video...
                                 </Typography>
                             </Box>
                         ) : (
-                            <Typography variant="h6" color={isDragActive ? 'primary' : 'text.primary'}>
+                            <Typography 
+                                variant="h5" 
+                                sx={{ 
+                                    color: isDragActive ? 'primary.main' : 'text.primary',
+                                    fontFamily: 'Chakra Petch',
+                                    fontWeight: 500,
+                                    letterSpacing: '0.5px',
+                                    mb: 2,
+                                    opacity: 0.8
+                                }}
+                            >
                                 {isDragActive
                                     ? "Drop the video here..."
                                     : "Drag & drop a video here, or click to select"}
                             </Typography>
                         )}
+
                     </UploadBox>
 
-                    <Box sx={{ mt: 3, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ 
-                            p: 1,
-                            borderRadius: 1,
-                            backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                        }}>
+                    <Box sx={{ 
+                        mt: 3, 
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 2  // Creates consistent spacing between elements
+                    }}>
+                        <Typography 
+                            variant="body2" 
+                            color="text.secondary" 
+                            sx={{ 
+                                p: 1.5,
+                                borderRadius: 2,
+                                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                fontFamily: 'Lexend',
+                                fontSize: '0.875rem',
+                                fontWeight: 400,
+                                display: 'inline-block',
+                                border: '1px solid rgba(0, 0, 0, 0.08)',
+                                width: 'auto'  // Allows the box to size to content
+                            }}
+                        >
                             Supported formats: MP4, AVI, MOV
                         </Typography>
                         
@@ -134,7 +194,20 @@ const VideoUpload = () => {
                                 variant="contained" 
                                 color="primary"
                                 onClick={() => setShowResults(true)}
-                                sx={{ mt: 2 }}
+                                sx={{ 
+                                    px: 4,
+                                    py: 1.5,
+                                    fontFamily: 'Lexend',
+                                    textTransform: 'capitalize', 
+                                    fontWeight: 600,
+                                    fontSize: '1.1rem',
+                                    letterSpacing: '0.5px',
+                                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                                    '&:hover': {
+                                        boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                                        transform: 'translateY(-1px)'
+                                    }
+                                }}
                             >
                                 View Analysis Results
                             </Button>
