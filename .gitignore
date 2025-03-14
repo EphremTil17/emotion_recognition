@@ -23,12 +23,9 @@ backend/processed/*
 *.vite
 frontend/dist/*
 frontend/myenv/*
-model/best_model.pth
-log/npm_run_dev.log
-log/processing_service.log
-log/realtime_service.log
-pids/npm_run_dev.pid
-pids/processing_service.pid
-pids/realtime_service.pid
-backend/analytics/latest_session.csv
+model/*
+log/*
+pids/*
+backend/analytics/*
 frontend/package-lock.json
+backend/audio/*

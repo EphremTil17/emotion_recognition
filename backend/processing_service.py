@@ -322,6 +322,20 @@ async def process_video(file: UploadFile = File(...)):
         logging.error(f"Error processing video: {str(e)}")
         return {"error": "An internal error has occurred!"}
 
+@app.get("/content-analysis")
+async def get_content_analysis():
+    """Get the latest content analysis"""
+    try:
+        content_analysis_path = ANALYTICS_DIR / "content_analysis.json"
+        if content_analysis_path.exists():
+            with open(content_analysis_path, "r") as f:
+                return json.load(f)
+        return {"error": "No content analysis available"}
+    except Exception as e:
+        logging.error(f"Error getting content analysis: {str(e)}")
+        return {"error": "An internal error has occurred!"}
+    
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
