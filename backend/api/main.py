@@ -1,12 +1,13 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 import httpx
 import os
 from dotenv import load_dotenv
 import aiofiles
 import uuid
 from pathlib import Path
+import mimetypes
 
 # Load environment variables
 load_dotenv()
@@ -75,14 +76,36 @@ async def process_video(file: UploadFile = File(...)):
     
 @app.get("/api/download/{filename}")
 async def download_video(filename: str):
-    file_path = PROCESSED_DIR / filename
+    # Use basename to strip any path components from the filename and Verify the constructed path is within the allowed directory
+    safe_filename = os.path.basename(filename)
+    
+    # Construct the file path using the sanitized filename
+    file_path = PROCESSED_DIR / safe_filename
+     
+    try:
+        # Resolve to get the canonical path with symlinks resolved
+        real_path = file_path.resolve(strict=False)
+        real_processed_dir = PROCESSED_DIR.resolve()
+        
+        # Check that the file's path starts with the processed directory path
+        if not str(real_path).startswith(str(real_processed_dir)):
+            raise HTTPException(status_code=400, detail="Invalid file path")
+    except (FileNotFoundError, RuntimeError):
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    
+    # Now check if the file exists
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
+    
+    # Determine the appropriate media type instead of hardcoding
+    media_type, _ = mimetypes.guess_type(str(file_path))
+    if not media_type:
+        media_type = "application/octet-stream"  # Default fallback
         
     return FileResponse(
         file_path,
-        media_type="video/mp4",
-        filename=filename
+        media_type=media_type,
+        filename=safe_filename  # Use the sanitized filename here too
     )
 
 if __name__ == "__main__":

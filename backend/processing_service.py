@@ -3,13 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pathlib import Path
 import sys
-import os
 from datetime import datetime
-import torch
 import pandas as pd
 import numpy as np
 import re
 import io
+import logging
 from contextlib import redirect_stdout
 
 # Add the src directory to Python path
@@ -19,6 +18,8 @@ sys.path.append(str(repo_root))
 sys.path.append(str(repo_root / "src"))
 
 from src.video_inference import VideoEmotionPredictor
+
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = FastAPI()
 
@@ -152,7 +153,8 @@ async def get_analytics():
             return FileResponse(analytics_path)
         return {"error": "No analytics data available"}
     except Exception as e:
-        return {"error": str(e)}
+        logging.error(f"Error in get_analytics: {str(e)}")
+        return {"error": "An internal error has occurred!"}
 
 @app.on_event("startup")
 async def startup_event():
@@ -170,15 +172,41 @@ async def startup_event():
 
 @app.post("/process")
 async def process_video(file: UploadFile = File(...)):
+    # Validate file type
+    allowed_types = ["video/mp4", "video/quicktime", "video/x-msvideo"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+    
+    # Validate file size 
+    MAX_SIZE = 100 * 1024 * 1024  # 100MB
+    file_size = 0
+    contents = await file.read(MAX_SIZE + 1)
+    file_size = len(contents)
+    
+    if file_size > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="File too large")
+    
+    # Reset file position
+    await file.seek(0)
     if not predictor:
         return {"error": "Predictor not initialized"}
     
     try:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename_base = f"{timestamp}_{file.filename}"
-        upload_path = UPLOAD_DIR / filename_base
-        processed_path = PROCESSED_DIR / f"processed_{filename_base}"
+        # Use fixed filenames to always overwrite previous files
+        file_extension = Path(file.filename).suffix
+        upload_filename = f"latest_upload{file_extension}"
+        processed_filename = f"latest_processed{file_extension}"
+        
+        upload_path = UPLOAD_DIR / upload_filename
+        processed_path = PROCESSED_DIR / processed_filename
         analytics_path = ANALYTICS_DIR / "latest_session.csv"
+        
+        # Clear the directories before saving new files
+        for old_file in UPLOAD_DIR.glob("*.*"):
+            old_file.unlink()
+        
+        for old_file in PROCESSED_DIR.glob("*.*"):
+            old_file.unlink()
         
         # Save uploaded file
         with open(upload_path, "wb") as f:
@@ -286,12 +314,13 @@ async def process_video(file: UploadFile = File(...)):
             "emotion_distribution": stats['emotion_distribution'],
             "duration_seconds": len(time_range),
             "analytics_file": str(analytics_path),
-            "engagement_scores": engagement_scores
+            "engagement_scores": engagement_scores,
+            "processed_video": str(processed_path)  # Include the path to the processed video
         }
             
     except Exception as e:
-        print(f"Error processing video: {str(e)}")
-        return {"error": str(e)}
+        logging.error(f"Error processing video: {str(e)}")
+        return {"error": "An internal error has occurred!"}
 
 if __name__ == "__main__":
     import uvicorn

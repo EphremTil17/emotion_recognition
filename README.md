@@ -69,7 +69,7 @@ Built with:
 
 ## Setup Instructions
 
-### Option 1: Docker Deployment
+### Option 1: Docker Deployment (Experimental)
 
 ```bash
 # Clone repository
@@ -95,10 +95,28 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 # Install dependencies
 pip install -r backend/requirements.txt
 
-# Start backend services
+# Start backend services either usng the bash script or manually
+cd emotion_recognition
+python3 -m venv env
+source env/bin/activate #Activate env
+./run_services.sh
+
+
+#To manually start the python servers and monitor them
 python backend/processing_service.py
 python backend/realtime_service.py
-# Monitor logs in newly created directory
+
+
+# Monitor logs in newly created log directory
+cd log
+tail -f log/realtime_service.log
+tail -f npm_run_dev.log
+tail -f processing_service.log
+```
+#### Stop Services
+
+```
+./kill_processes.sh
 ```
 #### Frontend Setup
 
