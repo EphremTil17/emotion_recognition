@@ -117,6 +117,195 @@ const StatsItem = ({ label, value }) => (
     </Box>
 );
 
+// Add this right after your imports, before the COLORS constant
+const ContentWithEmotions = ({ timeSeriesData }) => {
+    const [contentData, setContentData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [correlatedContent, setCorrelatedContent] = useState([]);
+
+    useEffect(() => {
+        fetch(`/api/content-analysis`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(text => {
+            if (!text.trim()) {
+                throw new Error("Empty response from server");
+            }
+            return JSON.parse(text);
+        })
+        .then(data => {
+            setContentData(data);
+            if (data && timeSeriesData) {
+                const correlated = correlateEmotionsWithContent(timeSeriesData, data);
+                setCorrelatedContent(correlated);
+            }
+            setLoading(false);
+        })
+        .catch(error => {
+            console.error('Error fetching content analysis:', error);
+            setLoading(false);
+        });
+    }, [timeSeriesData]);
+  
+    // Function to correlate emotion data with content
+    const correlateEmotionsWithContent = (emotions, content) => {
+      if (!content?.transcription?.results?.channels?.[0]?.alternatives?.[0]?.paragraphs?.paragraphs) {
+        return [];
+      }
+      
+      // Get paragraphs from content analysis
+      const paragraphs = content.transcription.results.channels[0].alternatives[0].paragraphs.paragraphs;
+      
+      return paragraphs.map(paragraph => {
+        // Find all emotions that occur during this paragraph
+        const paragraphEmotions = emotions.filter(item => 
+          item.timestamp >= paragraph.start && item.timestamp <= paragraph.end
+        );
+        
+        // Calculate emotion distribution
+        const emotionCounts = {};
+        paragraphEmotions.forEach(item => {
+          emotionCounts[item.emotion] = (emotionCounts[item.emotion] || 0) + 1;
+        });
+        
+        const totalEmotions = paragraphEmotions.length;
+        const emotionDistribution = Object.entries(emotionCounts).map(([emotion, count]) => ({
+          emotion,
+          percentage: totalEmotions > 0 ? (count / totalEmotions) * 100 : 0
+        }));
+        
+        // Find dominant emotion
+        const dominantEmotion = emotionDistribution.length > 0 
+          ? emotionDistribution.sort((a, b) => b.percentage - a.percentage)[0].emotion 
+          : 'Neutral';
+        
+        // Calculate average engagement score
+        const avgEngagement = paragraphEmotions.length > 0 
+          ? paragraphEmotions.reduce((sum, item) => sum + parseFloat(item.general_score || 0), 0) / paragraphEmotions.length
+          : 0;
+        
+        return {
+          text: paragraph.sentences?.map(s => s.text).join(' ') || '',
+          start: paragraph.start,
+          end: paragraph.end,
+          dominantEmotion,
+          emotionDistribution,
+          avgEngagement: parseFloat(avgEngagement.toFixed(2))
+        };
+      });
+    };
+  
+    // Format time in MM:SS format
+    const formatTime = (seconds) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+  
+    if (loading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      );
+    }
+  
+    if (!contentData?.transcription) {
+      return (
+        <Typography variant="body1" sx={{ my: 2, color: 'text.secondary' }}>
+          No content analysis available. The video may not contain speech or the analysis is still processing.
+        </Typography>
+      );
+    }
+  
+    // Display the summary
+    const summary = contentData.transcription?.results?.summary?.short;
+  
+    return (
+      <Box sx={{ mt: 2 }}>
+        {summary && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" fontWeight={500} sx={{
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+            }}>
+              Summary
+            </Typography>
+            <Paper variant="outlined" sx={{ p: 2, backgroundColor: '#f8f9fa' }}>
+              <Typography variant="body1" sx={{
+                fontStyle: 'italic',
+                fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+                fontSize: '14px'
+              }}>
+                {summary}
+              </Typography>
+            </Paper>
+          </Box>
+        )}
+  
+        <Typography variant="subtitle1" fontWeight={500} sx={{
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          mb: 2
+        }}>
+          Topics with Emotional Response
+        </Typography>
+  
+        {correlatedContent.map((item, index) => (
+          <Paper 
+            key={index} 
+            variant="outlined" 
+            sx={{ 
+              p: 2, 
+              mb: 2, 
+              borderLeft: `4px solid ${COLORS[item.dominantEmotion] || '#ccc'}`,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="caption" sx={{ 
+                color: 'text.secondary',
+                fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+              }}>
+                {formatTime(item.start)} - {formatTime(item.end)}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                  width: 10, 
+                  height: 10, 
+                  borderRadius: '50%', 
+                  backgroundColor: COLORS[item.dominantEmotion] || '#ccc' 
+                }} />
+                <Typography variant="caption" sx={{ 
+                  fontWeight: 500,
+                  fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+                }}>
+                  {item.dominantEmotion} | Engagement: {item.avgEngagement.toFixed(1)}
+                </Typography>
+              </Box>
+            </Box>
+            <Typography variant="body2" sx={{ 
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+            }}>
+              {item.text}
+            </Typography>
+          </Paper>
+        ))}
+      </Box>
+    );
+  };
+
 const ResultsView = ({ processedResults, onClose }) => {
     const [selectedEnvironment, setSelectedEnvironment] = useState('classroom');
     const [timeSeriesData, setTimeSeriesData] = useState(null);
@@ -399,6 +588,19 @@ const ResultsView = ({ processedResults, onClose }) => {
                                 height={350}
                             />
                         )}
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{
+                            fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+                        }}>
+                        Content Analysis
+                    </Typography>
+                    <ContentWithEmotions timeSeriesData={timeSeriesData} />
                     </Paper>
                 </Grid>
             </Grid>
