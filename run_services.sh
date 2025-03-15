@@ -37,6 +37,12 @@ start_service "processing_service" "python3 processing_service.py" "backend"
 # Start Python realtime_service from the backend directory.
 start_service "realtime_service" "python3 realtime_service.py" "backend"
 
+# Start Python content_analysis_service from the backend directory.
+start_service "content_analysis" "python3 content_analysis_service.py" "backend"
+
+# Start Python scholarly_search from the backend directory.
+start_service "scholarly_search" "python3 scholarly_search.py" "backend"
+
 # Start the npm dev server from the frontend directory.
 start_service "npm_run_dev" "npm run dev" "frontend"
 

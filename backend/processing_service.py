@@ -335,6 +335,18 @@ async def get_content_analysis():
         logging.error(f"Error getting content analysis: {str(e)}")
         return {"error": "An internal error has occurred!"}
     
+@app.get("/scholarly-results")
+async def get_scholarly_results():
+    """Get the latest scholarly search results"""
+    try:
+        scholarly_results_path = ANALYTICS_DIR / "scholarly_results.json"
+        if scholarly_results_path.exists():
+            with open(scholarly_results_path, "r") as f:
+                return json.load(f)
+        return {"error": "No scholarly results available"}
+    except Exception as e:
+        logging.error(f"Error getting scholarly results: {str(e)}")
+        return {"error": "An internal error has occurred!"}
 
 if __name__ == "__main__":
     import uvicorn

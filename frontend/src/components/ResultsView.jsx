@@ -117,7 +117,6 @@ const StatsItem = ({ label, value }) => (
     </Box>
 );
 
-// Add this right after your imports, before the COLORS constant
 const ContentWithEmotions = ({ timeSeriesData }) => {
     const [contentData, setContentData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -300,6 +299,122 @@ const ContentWithEmotions = ({ timeSeriesData }) => {
             }}>
               {item.text}
             </Typography>
+          </Paper>
+        ))}
+      </Box>
+    );
+  };
+
+const ScholarlyResources = () => {
+    const [scholarlyData, setScholarlyData] = useState(null);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      fetch(`/api/scholarly-results`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        setScholarlyData(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching scholarly results:', error);
+        setLoading(false);
+      });
+    }, []);
+  
+    if (loading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      );
+    }
+  
+    if (!scholarlyData || scholarlyData.error) {
+      return (
+        <Typography variant="body1" sx={{ my: 2, color: 'text.secondary' }}>
+          No scholarly resources available. Try processing a video with speech content.
+        </Typography>
+      );
+    }
+  
+    return (
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="subtitle1" fontWeight={500} sx={{
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          mb: 2
+        }}>
+          Scholarly Resources
+        </Typography>
+        
+        <Typography variant="caption" sx={{ 
+          color: 'text.secondary',
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          display: 'block',
+          mb: 2
+        }}>
+          Search query: {scholarlyData.optimized_query}
+        </Typography>
+  
+        {scholarlyData.results.map((item, index) => (
+          <Paper 
+            key={index} 
+            variant="outlined" 
+            sx={{ 
+              p: 2, 
+              mb: 2, 
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ 
+              fontWeight: 500,
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+            }}>
+              {item.title}
+            </Typography>
+            
+            <Typography variant="body2" color="text.secondary" sx={{ 
+              mb: 1,
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+            }}>
+              {item.authors} ({item.year}) - {item.venue}
+            </Typography>
+            
+            <Typography variant="body2" sx={{ 
+              mb: 2,
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+            }}>
+              {item.abstract.length > 250 ? `${item.abstract.substring(0, 250)}...` : item.abstract}
+            </Typography>
+            
+            {item.url && (
+              <Button 
+                variant="outlined" 
+                size="small"
+                href={item.url} 
+                target="_blank"
+                sx={{ 
+                  fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+                  textTransform: 'none'
+                }}
+              >
+                View Resource
+              </Button>
+            )}
           </Paper>
         ))}
       </Box>
@@ -601,6 +716,19 @@ const ResultsView = ({ processedResults, onClose }) => {
                         Content Analysis
                     </Typography>
                     <ContentWithEmotions timeSeriesData={timeSeriesData} />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{
+                            fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+                        }}>
+                            Related Resources
+                        </Typography>
+                        <ScholarlyResources />
                     </Paper>
                 </Grid>
             </Grid>

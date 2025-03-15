@@ -14,8 +14,8 @@ pydub
 ffmpeg-python
 # For API requests
 aiohttp
-# # For Google Gemini API
-# google-generativeai
+# For Google Gemini API
+google-generativeai
 # For environment variables
 python-dotenv
 
