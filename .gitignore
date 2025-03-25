@@ -15,9 +15,6 @@ venv/
 env/
 ENV/
 
-# Video files
-backend/uploads/*
-backend/processed/*
 
 #FrontEnd
 *.vite
@@ -26,6 +23,13 @@ frontend/myenv/*
 model/*
 log/*
 pids/*
-backend/analytics/*
 frontend/package-lock.json
+
+#backend
+backend/.env
+backend/analytics/*
 backend/audio/*
+# Video files
+backend/uploads/*
+backend/processed/*
+
